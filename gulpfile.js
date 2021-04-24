@@ -28,18 +28,19 @@ var prod = !!program.prod;
 
 const paths = {
     src: {
-        html: 'src/**.html',
-        css: 'src/css/**.css',
-        js: 'src/js/**.js',
-        jsLibs: 'src/js-libs/**/*.js',
-        images: 'src/images/**'
+        html: './src/*.html',
+        css: './src/css/*.css',
+        js: './src/js/*.js',
+        jsLibs: './src/js-libs/*.js',
+        images: './src/images/*.png'
     },
     dist: {
-        dir: 'dist',
-        css: 'style.min.css',
-        js: 'script.min.js',
-        jsLibs: 'libs.js',
-        images: 'dist/images'
+        dir: './dist',
+        html: './dist/',
+        css: './dist/css/',
+        js: './dist/js/',
+        jsLibs: './dist/js-libs/',
+        images: './dist/images/'
     }
 };
 
@@ -62,34 +63,31 @@ gulp.task('lintJS', () => {
 });
 
 gulp.task('cleanDist', () => {
-    return gulp.src('dist/**/*', { read: false })
+    return gulp.src('dist/', { read: false })
         .pipe(deleteFiles());
 });
 
 gulp.task('buildHTML', () => {
     return gulp.src(paths.src.html)
         .pipe(minifyHTML())
-        .pipe(gulp.dest(paths.dist.dir));
+        .pipe(gulp.dest(paths.dist.html));
 });
 
 gulp.task('buildCSS', () => {
     return gulp.src(paths.src.css)
-        .pipe(concat(paths.dist.css))
         .pipe(minifyCSS())
-        .pipe(gulp.dest(paths.dist.dir));
+        .pipe(gulp.dest(paths.dist.css));
 });
 
 gulp.task('buildJSLibs', () => {
     return gulp.src(paths.src.jsLibs)
-        .pipe(concat(paths.dist.jsLibs))
-        .pipe(gulp.dest(paths.dist.dir));
+        .pipe(gulp.dest(paths.dist.jsLibs));
 });
 
 gulp.task('buildJS', () => {
     return gulp.src(paths.src.js)
-        .pipe(concat(paths.dist.js))
-        .pipe(minifyJS())
-        .pipe(gulp.dest(paths.dist.dir));
+        //.pipe(minifyJS())
+        .pipe(gulp.dest(paths.dist.js));
 });
 
 gulp.task('optimizeImages', () => {
@@ -122,11 +120,11 @@ gulp.task('zip', () => {
 
 
 function watch() {
-    gulp.watch(paths.src.html, gulp.series('buildHTML', 'zip'));
-    gulp.watch(paths.src.css, gulp.series('buildCSS', 'zip'));
-    gulp.watch(paths.src.js, gulp.series('buildJS', 'zip'));
-    gulp.watch(paths.src.jsLibs, gulp.series('buildJSLibs', 'zip'));
-    gulp.watch(paths.src.images, gulp.series('optimizeImages', 'zip'));
+    gulp.watch(paths.src.html, gulp.series('buildHTML'));
+    gulp.watch(paths.src.css, gulp.series('buildCSS'));
+    gulp.watch(paths.src.js, gulp.series('buildJS'));
+    gulp.watch(paths.src.jsLibs, gulp.series('buildJSLibs'));
+    gulp.watch(paths.src.images, gulp.series('optimizeImages'));
 }
 
 gulp.task('serve', function() {
