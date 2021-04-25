@@ -63,7 +63,7 @@ gulp.task('lintJS', () => {
 });
 
 gulp.task('cleanDist', () => {
-    return gulp.src('dist/', { read: false })
+    return gulp.src('dist/', { read: false, allowEmpty: true })
         .pipe(deleteFiles());
 });
 
