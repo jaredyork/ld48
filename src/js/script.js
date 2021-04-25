@@ -94,6 +94,12 @@ class World {
 		this.screenHeightInTiles = ( this.scene.scale.height / ( this.tileSize * this.zoom ) );
 		console.log(this.screenWidthInTiles, this.screenHeightInTiles);
 
+		this.lightSources.push( {
+			x: this.screenWidthInTiles * 0.5,
+			y: 0,
+			radius: 22
+		} );
+
 		this.scene.cameras.main.setZoom(this.zoom);
 	}
 
@@ -133,7 +139,7 @@ class World {
 	removeBgTile( x, y ) {
 		let tile = this.getBgTile( x, y );
 		if ( tile !== null ) {
-			tile.remove();
+			tile.destroy();
 		}
 	}
 
@@ -185,7 +191,7 @@ class World {
 	removeTile( x, y ) {
 		let tile = this.getTile( x, y );
 		if ( tile !== null ) {
-			tile.remove();
+			tile.destroy();
 		}
 
 		this.updateLighting();
@@ -261,7 +267,7 @@ class World {
 				this.player.jumpVelocityX = this.player.body.velocity.x;
 			}
 
-			let hspeed = 30;
+			let hspeed = 40;
 
 			if ( ! this.player.onGround ) {
 				hspeed = Math.abs( this.player.jumpVelocityX );
@@ -318,6 +324,8 @@ class MainWorld extends World {
 			let dirtHeightVariation = Phaser.Math.Between( 5, 10 );
 
 			for ( let y = 0; y < this.screenHeightInTiles; y++ ) {
+				let perlin2 = noise.perlin2( x / 10, y / 10 );
+
 				if ( y === perlin ) {
 					this.addTile( x, y, 'GRASS' );
 				}
@@ -329,7 +337,10 @@ class MainWorld extends World {
 
 				if ( y > perlin + dirtHeightVariation - 1 ) {
 					this.addBgTile( x, y, 'STONE' );
-					this.addTile( x, y, 'STONE' );
+
+					if ( perlin2 > 0 ) {
+						this.addTile( x, y, 'STONE' );
+					}
 				}
 			}
 		}
@@ -342,7 +353,7 @@ class MainWorld extends World {
 		this.player.lightSource = new LightSource({
 			x: playerCellX,
 			y: playerCellY,
-			radius: 3
+			radius: 7
 		});
 		this.lightSources.push( this.player.lightSource );
 
@@ -371,13 +382,16 @@ class MainWorld extends World {
 		}
 
 
+
 		let cTop = this.scene.cameras.main.worldView.y;
-		this.topRowGenerated = ( Math.floor( cTop / this.tileSize ) * this.tileSize ) / this.tileSize;
+		this.topRowGenerated = ( ( Math.floor( cTop / this.tileSize ) * this.tileSize ) / this.tileSize ) - 2;
+
 		for ( let i = 0; i < this.tiles.getChildren().length; i++ ) {
 			let tile = this.tiles.getChildren()[i];
 
 			if ( tile.worldY < this.topRowGenerated ) {
-				tile.remove();
+				tile.destroy();
+				i--;
 			}
 		}
 
@@ -385,7 +399,8 @@ class MainWorld extends World {
 			let tile = this.bgTiles.getChildren()[i];
 
 			if ( tile.worldY < this.topRowGenerated ) {
-				tile.remove();
+				tile.destroy();
+				i--;
 			}
 		}
 
@@ -394,7 +409,7 @@ class MainWorld extends World {
 		let cBottom = this.scene.cameras.main.worldView.y + this.scene.cameras.main.worldView.height;
 		this.updateLighting();
 
-		this.bottomRowGenerated = ( Math.floor( cBottom / this.tileSize ) * this.tileSize ) / this.tileSize;
+		this.bottomRowGenerated = ( ( Math.floor( cBottom / this.tileSize ) * this.tileSize ) / this.tileSize ) + 2;
 
 		let isBottomRowAlreadyGenerated = false;
 		for ( let i = 0; i < this.bottomRowsGenerated.length; i++ ) {
@@ -409,12 +424,14 @@ class MainWorld extends World {
 					//console.log(this.scene.cameras.main.worldView, 'setting bottom row generated: ', this.lastBottomRowGenerated, this.bottomRowGenerated );
 
 					for ( let x = 0; x < this.screenWidthInTiles; x++) {
-						let perlin = Math.floor((this.screenHeightInTiles * 0.25) + Math.pow(noise.perlin2(x/this.terrainDivisor, 0), 2) * this.terrainAmplifier);
-			
-						let dirtHeightVariation = Phaser.Math.Between( 5, 10 );
-			
 						let y = this.bottomRowGenerated;
 
+						let perlin = Math.floor((this.screenHeightInTiles * 0.25) + Math.pow(noise.perlin2(x/this.terrainDivisor, 0), 2) * this.terrainAmplifier);
+
+						let dirtHeightVariation = Phaser.Math.Between( 5, 10 );
+		
+						let perlin2 = noise.perlin2( x / 10, y / 10 );
+		
 						if ( y === perlin ) {
 							this.addTile( x, y, 'GRASS' );
 						}
@@ -426,7 +443,10 @@ class MainWorld extends World {
 		
 						if ( y > perlin + dirtHeightVariation - 1 ) {
 							this.addBgTile( x, y, 'STONE' );
-							this.addTile( x, y, 'STONE' );
+							
+							if ( perlin2 > 0 ) {
+								this.addTile( x, y, 'STONE' );
+							}
 						}
 					}
 
