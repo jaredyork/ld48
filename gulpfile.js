@@ -29,6 +29,7 @@ var prod = !!program.prod;
 const paths = {
     src: {
         html: './src/*.html',
+        fonts: './src/fonts/*.ttf',
         css: './src/css/*.css',
         js: './src/js/*.js',
         jsLibs: './src/js-libs/*.js',
@@ -37,6 +38,7 @@ const paths = {
     dist: {
         dir: './dist',
         html: './dist/',
+        fonts: './dist/fonts/',
         css: './dist/css/',
         js: './dist/js/',
         jsLibs: './dist/js-libs/',
@@ -71,6 +73,11 @@ gulp.task('buildHTML', () => {
     return gulp.src(paths.src.html)
         .pipe(minifyHTML())
         .pipe(gulp.dest(paths.dist.html));
+});
+
+gulp.task('buildFonts', () => {
+    return gulp.src(paths.src.fonts)
+        .pipe(gulp.dest(paths.dist.fonts));
 });
 
 gulp.task('buildCSS', () => {
@@ -121,6 +128,7 @@ gulp.task('zip', () => {
 
 function watch() {
     gulp.watch(paths.src.html, gulp.series('buildHTML'));
+    gulp.watch(paths.src.fonts, gulp.series('buildFonts'));
     gulp.watch(paths.src.css, gulp.series('buildCSS'));
     gulp.watch(paths.src.js, gulp.series('buildJS'));
     gulp.watch(paths.src.jsLibs, gulp.series('buildJSLibs'));
@@ -146,7 +154,7 @@ gulp.task('test', gulp.parallel(
 
 gulp.task('build', gulp.series(
     'cleanDist',
-    gulp.series('buildHTML', 'buildCSS', 'buildJSLibs', 'buildJS', 'optimizeImages'),
+    gulp.series('buildHTML', 'buildFonts', 'buildCSS', 'buildJSLibs', 'buildJS', 'optimizeImages'),
     'zip'
 ));
 
@@ -156,7 +164,7 @@ gulp.task('dist', function() {
         gutil.log(gutil.colors.yellow('WARNING'), gutil.colors.gray('You should generate production assets to lower the archive size'));
     }
 
-    return gulp.series('cleanDist', gulp.series('buildHTML', 'buildCSS', 'buildJSLibs', 'buildJS', 'optimizeImages'), 'zip')
+    return gulp.series('cleanDist', gulp.series('buildHTML', 'buildFonts', 'buildCSS', 'buildJSLibs', 'buildJS', 'optimizeImages'), 'zip')
 });
 
 gulp.task('watch', watch);
